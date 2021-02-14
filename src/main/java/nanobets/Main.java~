@@ -1,0 +1,130 @@
+package tipnano;
+
+//sql2o 
+import org.sql2o.*;
+
+//java
+import java.util.List;
+import java.sql.DriverManager;
+import java.net.MalformedURLException; 
+import java.io.IOException;
+import java.util.Stack;
+import java.lang.Thread;
+import java.lang.Thread.UncaughtExceptionHandler;
+import java.util.HashMap;
+import java.net.URL;
+
+//java blockcallback
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.Executor;
+import static java.util.concurrent.TimeUnit.*;
+import java.util.concurrent.Executors; 
+import java.math.BigInteger;
+import java.net.InetAddress; 
+import java.util.Stack;
+
+
+//spark
+import spark.staticfiles.*;
+import static spark.Spark.*;
+
+//apache log4j
+import org.apache.log4j.Logger;
+
+//tipnano
+import tipnano.SparkUtils;
+import static tipnano.Tools.*;
+
+//jnano
+import uk.oczadly.karl.jnano.rpc.RpcQueryNode;
+
+
+//jnano blockcallback
+import uk.oczadly.karl.jnano.callback.BlockCallbackServer; 
+import uk.oczadly.karl.jnano.rpc.RpcQueryNode; 
+import uk.oczadly.karl.jnano.callback.BlockData; 
+import uk.oczadly.karl.jnano.rpc.request.wallet.RequestSend;
+
+//sql2o blockcallback
+import org.sql2o.Sql2o;
+import org.sql2o.*;
+
+//jackson
+import com.fasterxml.jackson.core.JsonProcessingException; 
+
+
+//httpcore
+import uk.oczadly.karl.jnano.rpc.HttpRequestExecutor; 
+
+
+public class Main {
+
+	public static boolean work_running = false;
+	public static HashMap<String, Long> withdrawMap = new HashMap<String, Long>();  
+	public static HashMap<String, Long> gamble_map = new HashMap<String, Long>();  
+	public static HashMap<String, String> idMap = new HashMap<String, String>();  
+
+	public static String global_withdraw_id = "";
+
+	public static Stack<UpdateObject> balance_update_stack = new Stack<UpdateObject>();	
+
+        public static Sql2o sql2o = new Sql2o("jdbc:sqlite:nanodb.db", null, null);
+        public static RpcQueryNode node; 
+	public static Stack<String> work_stack = new Stack<String>();	
+	public static Stack<String> id_stack = new Stack<String>();	
+	public static Stack<String> withdraw_id_stack = new Stack<String>();	
+	public static Stack<RequestSend> withdraw_stack = new Stack<RequestSend>();	
+	public static InetAddress inet_node; 
+	public static String target;
+	public static BlockData block;
+	//Threads
+	private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+	private static final ScheduledExecutorService scheduler2 = Executors.newScheduledThreadPool(1);
+	private static final ScheduledExecutorService scheduler3 = Executors.newScheduledThreadPool(1);
+	private static final ScheduledExecutorService scheduler4 = Executors.newScheduledThreadPool(1);
+	private static final ScheduledExecutorService scheduler5 = Executors.newScheduledThreadPool(1);
+	public static Stack<BlockData> stack = new Stack<BlockData>();	
+	public static UserThread userThread = new UserThread();
+	public static WorkThread workThread = new WorkThread();
+	public static WmapThread wmapThread = new WmapThread();
+	public static Logger logger = Logger.getLogger(Main.class);
+	public static String user_id_work = null;
+
+    	public static void main(String[] args) throws MalformedURLException, JsonProcessingException, IOException {
+                
+		port(4567);
+                externalStaticFileLocation("src/main/resources/public");
+		SparkUtils.createServerWithRequestLog(logger);
+
+                //Configure nano node connection to localhost:7076
+        	//node = new RpcQueryNode("localhost", 11338); 
+		//"http://localhost:7076"
+		 node = new RpcQueryNode.Builder()
+			.setAddress(new URL("http://localhost:7076"))
+			.setRequestExecutor(new HttpRequestExecutor(true))
+			.build();
+        	//node = new RpcQueryNode(); 
+		//userPojo.insertUser("foo", "bar@mail.com");
+        	new UserController(node);
+
+		workThread.start();
+
+		//Initialise the callback listening server on port 8080
+		BlockCallbackServer server = new BlockCallbackServer(8080);
+		//Register the listener (defined below)
+		server.registerListener(new Listener());
+		//Start the server (in separate thread)
+		server.start();
+
+		//initiate the lottery thread
+  		LotteryThread lotteryThread = new LotteryThread();
+
+		//Checks and updates admin balance in admin table every 30 seconds.
+  		AdminThread adminThread = new AdminThread();
+		//scheduler.scheduleAtFixedRate(adminThread, 0, 300, SECONDS);
+		scheduler2.scheduleAtFixedRate(userThread, 0, 10, SECONDS);
+		scheduler3.scheduleAtFixedRate(workThread, 0, 10, SECONDS);
+		scheduler4.scheduleAtFixedRate(wmapThread, 0, 100, SECONDS);
+		scheduler5.scheduleAtFixedRate(lotteryThread, 0, 300, SECONDS);
+        }
+}

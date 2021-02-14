@@ -1,0 +1,197 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+
+plugins {
+    	id 'java'
+    	id "org.gradle.java"
+    	id "com.scuilion.syntastic" version "0.3.8"
+	id 'application'
+}
+
+apply plugin: 'war'
+apply plugin: "com.scuilion.syntastic"
+
+group 'nano.projects'
+version '1'
+mainClassName = 'nanobets.Main'
+
+repositories {
+    	mavenCentral()
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'nanobets.Main'
+        )
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+ }
+
+
+dependencies {
+        // https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client
+        compile group: 'org.mariadb.jdbc', name: 'mariadb-java-client', version: '2.7.2'
+	// https://mvnrepository.com/artifact/com.sparkjava/spark-core Web framework
+	compile group: 'com.sparkjava', name: 'spark-core', version: '2.9.1'
+	compile group: 'com.sparkjava', name: 'spark-core', version: '2.9.1', classifier: 'sources'
+	// https://mvnrepository.com/artifact/org.slf4j/slf4j-simple logger
+	compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30'
+	compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30', classifier: 'sources'
+	//https://mvnrepository.com/artifact/com.google.code.gson/gson json transformer 
+	compile group: 'com.google.code.gson', name: 'gson', version: '2.8.6'
+	compile group: 'com.google.code.gson', name: 'gson', version: '2.8.6', classifier: 'sources'
+	// https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api 
+	testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.6.0'	
+	testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.6.0', classifier: 'sources'	
+	// https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine
+	testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.6.0'
+	testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.6.0', classifier: 'sources'
+	// https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+	compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'	
+	compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.9', classifier: 'sources'	
+	// https://mvnrepository.com/artifact/org.sql2o/sql2o
+	compile group: 'org.sql2o', name: 'sql2o', version: '1.6.0'
+	compile group: 'org.sql2o', name: 'sql2o', version: '1.6.0', classifier: 'sources'
+	// https://mvnrepository.com/artifact/mysql/mysql-connector-java
+	compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.18'
+	compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.18', classifier: 'sources'
+	// https://mvnrepository.com/artifact/com.googlecode.json-simple/json-simple
+	compile group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'	
+	compile group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1', classifier: 'sources'	
+	// https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient
+	compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.11'
+	compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.11', classifier: 'sources'
+	// https://mvnrepository.com/artifact/log4j/log4j
+	compile group: 'log4j', name: 'log4j', version: '1.2.17'
+	compile group: 'log4j', name: 'log4j', version: '1.2.17', classifier: 'sources'
+        // https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc
+        compile group: 'org.xerial', name: 'sqlite-jdbc', version: '3.30.1'
+        compile group: 'org.xerial', name: 'sqlite-jdbc', version: '3.30.1', classifier: 'sources'
+        // https://mvnrepository.com/artifact/commons-codec/commons-codec 
+        compile group: 'commons-codec', name: 'commons-codec', version: '1.14'
+        compile group: 'commons-codec', name: 'commons-codec', version: '1.14', classifier: 'sources'
+	// https://mvnrepository.com/artifact/uk.oczadly.karl/jnano
+	compile group: 'uk.oczadly.karl', name: 'jnano', version: '2.8.1-V21.2'
+	// https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
+	compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.11.0'
+	compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.11.0', classifier: 'sources'
+	// https://mvnrepository.com/artifact/io.nayuki/qrcodegen
+	compile group: 'io.nayuki', name: 'qrcodegen', version: '1.6.0'
+	compile group: 'io.nayuki', name: 'qrcodegen', version: '1.6.0', classifier: 'sources'
+	// https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+	compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.11'
+	// https://mvnrepository.com/artifact/org.apache.httpcomponents/httpcore
+	compile group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.13'
+
+
+}
+//println configurations.runtime.resolve()
+
+//Get all Jars of packages in project
+task showJarLocations {
+    	doLast {
+        	configurations.compile.resolve().each { file -> println file.canonicalPath }
+    	}
+}
+
+test {
+	useJUnitPlatform();
+	testLogging.showStandardStreams = true;   
+	testLogging {
+		events "passed", "skipped", "failed"
+	}
+
+	
+}
+tasks.withType(JavaCompile) {
+    options.warnings = false
+}
+
+//compileJava.options.fork = true
+//compileJava.options.forkOptions.executable = "/usr/lib/jvm/java-8-openjdk-amd64/bin/javac"
+
+
+sourceSets {
+
+	test {
+		java.srcDirs = ['src/test/java']
+	}
+}
+
+sourceSets {
+    main {
+		java.srcDirs = ['src/main/resources/public', 'src/main/java']
+    }
+}
+
+
+
+tasks.withType(Test) {
+    testLogging {
+        // set options for log level LIFECYCLE
+        events TestLogEvent.FAILED,
+               TestLogEvent.PASSED,
+               TestLogEvent.SKIPPED,
+               TestLogEvent.STANDARD_OUT
+        exceptionFormat TestExceptionFormat.FULL
+        showExceptions true
+        showCauses true
+        showStackTraces true
+
+        // set options for log level DEBUG and INFO
+        debug {
+            events TestLogEvent.STARTED,
+                   TestLogEvent.FAILED,
+                   TestLogEvent.PASSED,
+                   TestLogEvent.SKIPPED,
+                   TestLogEvent.STANDARD_ERROR,
+                   TestLogEvent.STANDARD_OUT
+            exceptionFormat TestExceptionFormat.FULL
+        }
+        info.events = debug.events
+        info.exceptionFormat = debug.exceptionFormat
+
+        afterSuite { desc, result ->
+            if (!desc.parent) { // will match the outermost suite
+                def output = "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} passed, ${result.failedTestCount} failed, ${result.skippedTestCount} skipped)"
+                def startItem = '|  ', endItem = '  |'
+                def repeatLength = startItem.length() + output.length() + endItem.length()
+                println('\n' + ('-' * repeatLength) + '\n' + startItem + output + endItem + '\n' + ('-' * repeatLength))
+            }
+        }
+    }
+}
+
+tasks.register("j") {
+    doLast {
+        println System.getProperty("java.home")           
+    }
+}
+tasks.withType(JavaCompile) {
+	options.warnings = false
+	options.compilerArgs += '-Xlint:-deprecation'
+}
+
+tasks.withType(JavaExec) {
+    jvmArgs = ['-Xms4000m', '-Xmx4000m']
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
