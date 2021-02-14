@@ -438,7 +438,7 @@ public class PojoBuilder {
 	 * returns user withdraw history.
 	 */
 	public static List<WithdrawObject> getWithdrawObject(String block_hash) {
-		try(Connection con = sql2o2.open()) {
+		try(Connection con = sql2o.open()) {
 			final String query =
 			"select withdraw_id, destination, amount, time, block_hash " +
 			"from withdraw where block_hash = :block_hash";

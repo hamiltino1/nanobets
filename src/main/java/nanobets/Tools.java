@@ -197,6 +197,11 @@ public class Tools {
 						//new balance is balance minus amount
 						BigInteger new_raw_balance = balance.subtract(amount);
 						String new_balance_string = new_raw_balance.toString();
+                        System.out.println(withdraw_id);
+                        System.out.println(userId);
+                        System.out.println(string_amount);
+                        System.out.println(block_hash);
+
 						PojoBuilder.insertWithdrawRecord(withdraw_id, destinationAccount, userId1, string_amount, block_hash);
 						System.out.println("Processed fast withdrawl");
 					}
