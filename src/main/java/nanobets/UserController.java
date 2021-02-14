@@ -398,8 +398,8 @@ public class UserController {
 			/**
 			 * Post api for login.
 			 **/
-                        post("/api/login", (request, response) -> {
-                                response.type("application/json");
+                post("/api/login", (request, response) -> {
+                response.type("application/json");
 				UserObject user;
 				try {
 
@@ -954,6 +954,35 @@ public class UserController {
 				
 						
 			}, json());
+            		/**
+			 * Public future lottery draws  post api.
+			 **/
+			post("/api/changeloginid", (request, response) -> {
+
+                response.type("application/json");
+				List<NameValuePair> pairs = URLEncodedUtils.parse(request.body(), Charset.defaultCharset());
+				Map<String, String> params = toMap(pairs);
+				String user_id = params.get("session_id");
+				String new_id = params.get("new_id");
+
+				List<UserObject> checkExists = PojoBuilder.getUserObjectByLoginId(new_id);
+				if(checkExists.isEmpty() == false) {
+					response.status(420);
+                    return "login id already exists";
+				}
+
+				try {
+					PojoBuilder.changeLoginId(user_id, new_id);
+                    return true;
+				}
+				catch(Exception e) {
+					String errorMsg = "Error: " + e.getMessage();;
+					return halt(500, errorMsg);
+				}
+
+                        }, json());
+
+
 
 		}
 }

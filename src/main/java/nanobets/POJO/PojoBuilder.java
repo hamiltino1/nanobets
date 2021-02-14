@@ -144,7 +144,27 @@ public class PojoBuilder {
 		try(Connection con = sql2o.open()) {
 				final String query =
 				"SELECT id, ip, qr_code, decimal_balance, walletId, fingerprint, balance " +
-				"FROM users WHERE id = :id";
+				"FROM users WHERE id = :id OR login_id = :login_id";
+
+				return con.createQuery(query)
+					.addParameter("id", id)
+					.addParameter("login_id", id)
+					.executeAndFetch(UserObject.class);
+			}	
+			catch (Exception e) {
+				e.printStackTrace();
+				return user_emptyList;
+			}        
+	} 
+    /**
+	 * Returns UserObject object by login id
+	 */
+	public static List<UserObject> getUserObjectByLoginId(String id) {
+
+		try(Connection con = sql2o.open()) {
+				final String query =
+				"SELECT id, ip, qr_code, decimal_balance, walletId, fingerprint, balance " +
+				"FROM users WHERE login_id = :id";
 
 				return con.createQuery(query)
 					.addParameter("id", id)
@@ -155,6 +175,7 @@ public class PojoBuilder {
 				return user_emptyList;
 			}        
 	}
+
 	/**
 	 * Returns UserObject object with specified username
 	 */
@@ -173,6 +194,23 @@ public class PojoBuilder {
 				e.printStackTrace();
 				return user_emptyList;
 			}        
+	}
+    public static boolean changeLoginId(String user_id, String new_id) {
+
+		String updateSql = "update users set login_id = :login_id where id = :user_id";
+		
+		try (Connection con = sql2o.open()) {
+			con.createQuery(updateSql)
+				.addParameter("login_id", new_id)
+				.addParameter("user_id", user_id)
+				.executeUpdate();
+			return true;
+		}
+
+		catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}        
 	}
 	/**
 	 * Returns deposit object with specified username.

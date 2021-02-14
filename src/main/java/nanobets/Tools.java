@@ -273,7 +273,7 @@ public class Tools {
 				return false;
 			}
 			//check valid odds
-			if(IntStream.of(1, 2, 3, 4, 5).anyMatch(i -> i == chosen_odds_int) && (DoubleStream.of(0.1, 0.6, 1.1, 1.6, 2.1).anyMatch(i -> i == double_bet_amount_final))) { 
+			if(IntStream.of(1, 2, 3, 4, 5).anyMatch(i -> i == chosen_odds_int) && (DoubleStream.of(0.05, 0.3, 0.55, 0.8, 1.05).anyMatch(i -> i == double_bet_amount_final))) { 
 				//get decimal places
 				String[] splitter = double_bet_amount.toString().split("\\.");
 				int decimal_places = splitter[1].length();
