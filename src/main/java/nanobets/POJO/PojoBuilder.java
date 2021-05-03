@@ -91,7 +91,7 @@ public class PojoBuilder {
 		"SELECT balance " +
 		"FROM admin WHERE id = 2";
 
-	    	try(Connection con = sql2o.open()) {
+	    	try(Connection con = sql2o2.open()) {
 			return con.createQuery(sql).executeAndFetch(AdminObject.class);
 	    }
 	}
@@ -529,11 +529,11 @@ public class PojoBuilder {
 
 	public static List<GambleObject> getPublicGambleHistory() {
 		String used = "1";
-		String id = "bb469234a7698fc5baf8d983303472e78b9430880344effc9c57b9c4a4de71ae";
+		String id = "5dbe850c6211b2bd4d211c3990588683cf0ac0355561ea1e93a130521e05449b";
 		try(Connection con = sql2o2.open()) {
 			final String query =
 			"SELECT result_hash, result_string, used, profit, chosen_odds, time_used, chosen_number " +
-			"FROM gamble WHERE used = :used AND user_id != :lottery_id ORDER BY epoch_time_used DESC";
+			"FROM gamble WHERE used = :used AND user_id != :lottery_id ORDER BY epoch_time_used DESC LIMIT 100";
 
 			return con.createQuery(query)
 				.addParameter("used", used)
@@ -547,7 +547,7 @@ public class PojoBuilder {
         }
 	public static List<GambleObject> getPublicLotteryHistory() {
 		String used = "1";
-		String user_id = "bb469234a7698fc5baf8d983303472e78b9430880344effc9c57b9c4a4de71ae";
+		String user_id = "5dbe850c6211b2bd4d211c3990588683cf0ac0355561ea1e93a130521e05449b";
 		try(Connection con = sql2o2.open()) {
 			final String query =
 			"SELECT result_hash, result_string, result_number, lottery_draw_time_utc, lottery_winners " +
@@ -565,11 +565,11 @@ public class PojoBuilder {
         }
 	public static List<GambleObject> getPublicLotteryHistoryLimit() {
 		String used = "1";
-		String user_id = "bb469234a7698fc5baf8d983303472e78b9430880344effc9c57b9c4a4de71ae";
+		String user_id = "5dbe850c6211b2bd4d211c3990588683cf0ac0355561ea1e93a130521e05449b";
 		try(Connection con = sql2o2.open()) {
 			final String query =
 			"SELECT result_hash, result_string, result_number, lottery_draw_time_utc, lottery_winners " +
-			"FROM gamble WHERE used = :used AND user_id = :user_id ORDER BY lottery_draw_time_epoch DESC LIMIT 20";
+			"FROM gamble WHERE used = :used AND user_id = :user_id ORDER BY lottery_draw_time_epoch DESC LIMIT 5";
 
 			return con.createQuery(query)
 				.addParameter("used", used)
@@ -603,7 +603,7 @@ public class PojoBuilder {
         }
 	public static List<GambleObject> getPublicLotteryFutures() {
 		String used = "0";
-		String user_id = "bb469234a7698fc5baf8d983303472e78b9430880344effc9c57b9c4a4de71ae";
+		String user_id = "5dbe850c6211b2bd4d211c3990588683cf0ac0355561ea1e93a130521e05449b";
 		try(Connection con = sql2o2.open()) {
 			final String query =
 			"SELECT result_hash, lottery_draw_time_utc " +

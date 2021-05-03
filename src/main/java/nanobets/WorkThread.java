@@ -65,11 +65,14 @@ import static nanobets.PojoBuilder2.*;
 public class WorkThread extends Thread {
 
 	private String target;
+    private String sourceAccount;
 	private List<UserObject> all_users; 
 	private UserObject user;
 	private String block_account_address;
 	private BigInteger raw_pocketed;
 	private String frontier;
+    private ResponseBlockHash response;
+    private RequestSend request_send;
 
   	public WorkThread(){
     	}
@@ -78,75 +81,87 @@ public class WorkThread extends Thread {
 	 * Runs work thread
 	 */
 	public void run() {
-		withdrawMethod();
+        try {
+		    withdrawMethod();
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+        }
 	}
 
-	public void withdrawMethod() {
+	public void withdrawMethod() throws IOException {
+        if(work_running == false) {
+            work_running = true;
+            System.out.println("Work thread started");
+            System.out.println("Current work stack size: " + work_stack.size());
+            System.out.println("Current withdraw stack size: " + withdraw_stack.size());
+            System.out.println("Work thread started");
+            System.out.println("work running: " + work_running);
+            System.out.println("withdraw stack empty check: " + withdraw_stack.isEmpty());
 
-		System.out.println("Work thread started");
-		System.out.println("Current work stack size: " + work_stack.size());
-		System.out.println("Current withdraw stack size: " + withdraw_stack.size());
-		System.out.println("Work thread started");
-		System.out.println("work running: " + work_running);
-		System.out.println("withdraw stack empty check: " + withdraw_stack.isEmpty());
+                if(withdraw_stack.isEmpty() == false) {
+                    System.out.println("Withdraw stack not empty");
+                    String withdraw_id = withdraw_id_stack.pop();
+                    //String withdraw_id = global_withdraw_id;;
+                    //
+                    try {
 
-		try {
-			if(withdraw_stack.isEmpty() == false) {
-				System.out.println("Withdraw stack not empty");
-				System.out.println("Withdraw stack not empty");
-				System.out.println("Withdraw stack not empty");
-				System.out.println("Withdraw stack not empty");
-				System.out.println("Withdraw stack not empty");
-				String withdraw_id = withdraw_id_stack.pop();
-				//String withdraw_id = global_withdraw_id;;
+                        request_send = withdraw_stack.peek();
+                        response  = node.processRequest(request_send);
+                    }
+                    catch(Exception e) {
+                        e.printStackTrace();
+                        System.out.println("withdraw stack send error: 56worksend");
+                    }
 
-				RequestSend request_send = withdraw_stack.peek();
-				ResponseBlockHash response  = node.processRequest(request_send);
-
-				//db work
-				HexData hex4 = response.getBlockHash();
-				String block_hash = hex4.toString();
-				BigInteger amount =  request_send.getAmount();
-				BigDecimal dec_amount =  new BigDecimal(amount);
-				dec_amount = dec_amount.movePointLeft(30);
-				dec_amount = dec_amount.stripTrailingZeros();
-				String string_amount = dec_amount.toPlainString();
-				String random_string = RandomStringUtils.randomAlphabetic(10);
-				String destination_account = request_send.getDestinationAccount(); 
-				String source_account = request_send.getSourceAccount();
-				String user_id = id_stack.peek();
-				//new balance is balance minus amount
-				PojoBuilder.insertWithdrawRecord(withdraw_id, destination_account, user_id, string_amount, block_hash);
-				id_stack.pop();
-				withdraw_stack.pop();
-				withdrawMap.remove(user_id);
-				System.out.println("withdraw processed from withdraw stack");
-				//Address contains new frontier, so work_stack needs to be cleared
-				/*
-				if(work_stack.isEmpty() == false) {
-					work_stack.pop();
-				}
-				*/
-				work_stack.clear();
-			}
-			else if(work_stack.isEmpty()) {
-				System.out.println("Finding work for stack");
-				String sourceAccount = "nano_3z1z144ggdujyypjmrm9dn37a5jimur6g5poshxzz5ryr6jjf8hufjgq16yr";
-				frontier = Tools.getFrontier(sourceAccount);
-				Tools.getWorkSolution(frontier);		
-				System.out.println("new work solution added to stack");
-			}
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}
-
-		try {
-			TimeUnit.SECONDS.sleep(5);		
-			withdrawMethod();
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}
-	}
+                    //db work
+                    HexData hex4 = response.getBlockHash();
+                    String block_hash = hex4.toString();
+                    BigInteger amount =  request_send.getAmount();
+                    BigDecimal dec_amount =  new BigDecimal(amount);
+                    dec_amount = dec_amount.movePointLeft(30);
+                    dec_amount = dec_amount.stripTrailingZeros();
+                    String string_amount = dec_amount.toPlainString();
+                    String random_string = RandomStringUtils.randomAlphabetic(10);
+                    String destination_account = request_send.getDestinationAccount(); 
+                    String source_account = request_send.getSourceAccount();
+                    String user_id = id_stack.peek();
+                    //new balance is balance minus amount
+                    PojoBuilder.insertWithdrawRecord(withdraw_id, destination_account, user_id, string_amount, block_hash);
+                    id_stack.pop();
+                    withdraw_stack.pop();
+                    withdrawMap.remove(user_id);
+                    System.out.println("withdraw processed from withdraw stack");
+                    //Address contains new frontier, so work_stack needs to be cleared
+                    /*
+                    if(work_stack.isEmpty() == false) {
+                        work_stack.pop();
+                    }
+                    */
+                    work_stack.clear();
+                    work_running = false;
+                }
+                else if(work_stack.isEmpty()) {
+                    try {
+                        System.out.println("Finding work for stack");
+                        sourceAccount = "nano_3z1z144ggdujyypjmrm9dn37a5jimur6g5poshxzz5ryr6jjf8hufjgq16yr";
+                        frontier = Tools.getFrontier(sourceAccount);
+                        Tools.getWorkSolution(frontier);		
+                        System.out.println("new work solution added to stack");
+                        work_running = false;
+                    }
+                    catch(Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            
+            try {
+                TimeUnit.SECONDS.sleep(5);		
+                withdrawMethod();
+            }
+            catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

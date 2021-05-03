@@ -107,7 +107,7 @@ public class UserController {
 			 * Public future lottery draws  post api.
 			 **/
 			get("/api/lottery/future", (request, response) -> {
-                                response.type("application/json");
+                response.type("application/json");
 				List<GambleObject> gambleObject;
 				try {
 					gambleObject  = PojoBuilder.getPublicLotteryFutures();
@@ -218,7 +218,7 @@ public class UserController {
 			 * Public gamble history post api.
 			 **/
 			get("/api/gamble/:result_hash", (request, response) -> {
-                                response.type("application/json");
+                response.type("application/json");
 				String result_hash = request.params(":result_hash");
 				List<GambleObject> gambleObject;
 				List<GambleObject> gambleObject2;
@@ -557,7 +557,7 @@ public class UserController {
 					BigDecimal dec_balance = user.getDecimalBalance();
 					BigInteger balance = user.getBalance();
 
-					double min = 0.05;
+					double min = 0.01;
 					if(Double.compare(doubleAmount, min) == -1) {
 						System.out.println("request to low");
 						withdrawMap.remove(session_id);
@@ -704,7 +704,7 @@ public class UserController {
 
 						gamble_map.remove(session_id);
 						response.status(400);
-						return "invalid bet";
+						return "Invalid bet";
 					}
 				} 
 				catch(IndexOutOfBoundsException e) {
@@ -900,7 +900,7 @@ public class UserController {
 					/* check if entry is valid, update user balance and add an entry record if true */
 					if(checkValidEntry(params, user) == true) {
 						//update user balance.
-						double entryCost = -0.07;
+						double entryCost = -0.035;
 						PojoBuilder.updateDbBalance(user, entryCost);
 						PojoBuilder.insertEntry(user, params);
 						//get current lottery jackpot

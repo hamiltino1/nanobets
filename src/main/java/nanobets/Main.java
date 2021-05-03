@@ -39,7 +39,8 @@ import static nanobets.Tools.*;
 
 //jnano
 import uk.oczadly.karl.jnano.rpc.RpcQueryNode;
-
+import uk.oczadly.karl.jnano.rpc.request.node.RequestWorkPeerAdd;
+import uk.oczadly.karl.jnano.rpc.response.ResponseSuccessful; 
 
 //jnano blockcallback
 import uk.oczadly.karl.jnano.callback.BlockCallbackServer; 
@@ -97,16 +98,16 @@ public class Main {
 	public static String user_id_work = null;
 
     	public static void main(String[] args) throws MalformedURLException, JsonProcessingException, IOException {
-		    port(80);
+     	    node = new RpcQueryNode(); 
+            port(80);
             externalStaticFileLocation("/root/public");
-		    SparkUtils.createServerWithRequestLog(logger);
-        	node = new RpcQueryNode(); 
-        	new UserController(node);
-  		    LotteryThread lotteryThread = new LotteryThread();
-            scheduler1.scheduleAtFixedRate(balanceThread, 0, 10, SECONDS);
-            scheduler2.scheduleAtFixedRate(moveThread, 0, 60, SECONDS);
+  	    SparkUtils.createServerWithRequestLog(logger);
+            new UserController(node);
+    	    LotteryThread lotteryThread = new LotteryThread();
+            scheduler1.scheduleAtFixedRate(balanceThread, 0, 7, SECONDS);
+            scheduler2.scheduleAtFixedRate(moveThread, 0, 10, SECONDS);
             scheduler3.scheduleAtFixedRate(wmapThread, 0, 100, SECONDS);
-            scheduler4.scheduleAtFixedRate(lotteryThread, 0, 300, SECONDS);
+            scheduler4.scheduleAtFixedRate(lotteryThread, 0, 500, SECONDS);
             scheduler5.scheduleAtFixedRate(workThread, 0, 10, SECONDS);
 	}
 }

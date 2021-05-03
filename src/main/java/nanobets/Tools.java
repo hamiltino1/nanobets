@@ -172,6 +172,7 @@ public class Tools {
 			}
 			catch(Exception e) {
 				e.printStackTrace();
+				return false;
 			}
 
 			//jnano process
@@ -197,21 +198,41 @@ public class Tools {
 						//new balance is balance minus amount
 						BigInteger new_raw_balance = balance.subtract(amount);
 						String new_balance_string = new_raw_balance.toString();
-                        System.out.println(withdraw_id);
-                        System.out.println(userId);
-                        System.out.println(string_amount);
-                        System.out.println(block_hash);
+                        			System.out.println(withdraw_id);
+                        			System.out.println(userId);
+                        			System.out.println(string_amount);
+                        			System.out.println(block_hash);
 
 						PojoBuilder.insertWithdrawRecord(withdraw_id, destinationAccount, userId1, string_amount, block_hash);
 						System.out.println("Processed fast withdrawl");
+                        			//Start work generation.
+                        			String frontier = getFrontier("nano_3z1z144ggdujyypjmrm9dn37a5jimur6g5poshxzz5ryr6jjf8hufjgq16yr");
+                        			getWorkSolution(frontier);
 					}
 					else {
-						System.out.println("Invalid work");
-						addToWithdrawStack(walletId, withdraw_id, user_id, user, amount_double, amount, destinationAccount, sourceAccount);	
+
+						//addToWithdrawStack(walletId, withdraw_id, user_id, user, amount_double, amount, destinationAccount, sourceAccount);	
+                        			RequestSend request2 = new RequestSend(walletId, sourceAccount, destinationAccount, amount, withdraw_id);
+						response = node.processRequest(request2);
+						HexData hex = response.getBlockHash();
+						block_hash = hex.toString();
+						PojoBuilder.insertWithdrawRecord(withdraw_id, destinationAccount, userId1, string_amount, block_hash);
+                        			//Start work generation
+
+					    //	System.out.println("Invalid work");
+					    //addToWithdrawStack(walletId, withdraw_id, user_id, user, amount_double, amount, destinationAccount, sourceAccount);	
 					}
 				}
 				else {
-					addToWithdrawStack(walletId, withdraw_id, user_id, user, amount_double, amount, destinationAccount, sourceAccount);
+ 					RequestSend request3 = new RequestSend(walletId, sourceAccount, destinationAccount, amount, withdraw_id);
+					response = node.processRequest(request3);
+					HexData hex = response.getBlockHash();
+					block_hash = hex.toString();
+					PojoBuilder.insertWithdrawRecord(withdraw_id, destinationAccount, userId1, string_amount, block_hash);
+					//addToWithdrawStack(walletId, withdraw_id, user_id, user, amount_double, amount, destinationAccount, sourceAccount);
+
+                    			//System.out.println("work stack is empty adding to stack");
+					//addToWithdrawStack(walletId, withdraw_id, user_id, user, amount_double, amount, destinationAccount, sourceAccount);
 				}
 			}
 			catch(Exception e) {
@@ -273,7 +294,7 @@ public class Tools {
 				return false;
 			}
 			//check valid odds
-			if(IntStream.of(1, 2, 3, 4, 5).anyMatch(i -> i == chosen_odds_int) && (DoubleStream.of(0.05, 0.3, 0.55, 0.8, 1.05).anyMatch(i -> i == double_bet_amount_final))) { 
+			if(IntStream.of(1, 2, 3, 4, 5).anyMatch(i -> i == chosen_odds_int) && (DoubleStream.of(0.01, 0.11, 0.21, 0.31, 0.41, 0.51, 0.61, 0.71, 0.81, 0.91, 1.01, 1.11, 1.21).anyMatch(i -> i == double_bet_amount_final))) { 
 				//get decimal places
 				String[] splitter = double_bet_amount.toString().split("\\.");
 				int decimal_places = splitter[1].length();
@@ -328,7 +349,7 @@ public class Tools {
 			//get user balance
 			BigDecimal balance = user.getDecimalBalance();
 			//initiate the cost amount of a single entry
-			BigDecimal compare = new BigDecimal(0.07); 
+			BigDecimal compare = new BigDecimal(0.035); 
 			compare = compare.setScale(2, RoundingMode.DOWN);
 
 			
@@ -395,6 +416,7 @@ public class Tools {
 		catch(Exception e) {
 			e.printStackTrace();
 			gamble_list = Collections.emptyList();
+			System.out.println(user_id);
 		}
 		finally {
 			return gamble_object;
@@ -431,7 +453,7 @@ public class Tools {
 		}
 		for(int x : int_list) {
 			if(x == chosen_number_int) {
-			 	double multiplier = (6/chosen_odds_int) * 0.985;
+			 	double multiplier = (6/chosen_odds_int) * 0.85;
 			 	profit = ((double_bet_amount * multiplier) - double_bet_amount);
 				profit = profit;
         			profit = Math.round(profit * 1000000.0) / 1000000.0;
@@ -441,7 +463,6 @@ public class Tools {
 		profit = (double_bet_amount * -1);
 		return profit;
 	}
-
 	/**
 	 * Converts list into hashmap
 	 */

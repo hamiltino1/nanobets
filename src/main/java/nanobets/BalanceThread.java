@@ -95,8 +95,8 @@ public class BalanceThread extends Thread {
                 String db_account_address = user.getNanoAddress();
                 raw_pending = getPendingBalance(db_account_address);
                 if(raw_pending.signum() == 1) {
-                    PojoBuilder2.updateDbBalance(user, raw_pending);
-                    PojoBuilder2.insertDepositRecord(db_account_address, user_id,  raw_pending);
+                    //PojoBuilder2.updateDbBalance(user, raw_pending);
+                    //PojoBuilder2.insertDepositRecord(db_account_address, user_id,  raw_pending);
                 }
                 Map<HexData, ResponsePending.PendingBlock> pendingMap =  getPendingBlocks(db_account_address);
                 for (Map.Entry<HexData, ResponsePending.PendingBlock> entry : pendingMap.entrySet()) {
@@ -104,7 +104,9 @@ public class BalanceThread extends Thread {
                     String pending_block = hex.toString();
                     RequestReceive receive = new RequestReceive("07EE0EBE61BCF1177A8930A843609C3ED01854B7570069507DE787A10AD68DC4", db_account_address, pending_block);
                     receiveDeposit(receive);
-                    //raw_pocketed = getPocketedBalance(db_account_address);
+                    raw_pocketed = getPocketedBalance(db_account_address);
+                    PojoBuilder2.updateDbBalance(user, raw_pocketed);
+                    PojoBuilder2.insertDepositRecord(db_account_address, user_id,  raw_pocketed);
                 }
 
         }

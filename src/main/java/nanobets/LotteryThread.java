@@ -81,11 +81,11 @@ public class LotteryThread extends Thread {
 		AdminObject admin = jackpot_list.get(0);
 		double jackpotAdmin = admin.getBalance();	
 		if(jackpotAdmin <= 0) {
-			double new_jackpot = 50;
+			double new_jackpot = 25;
 			PojoBuilder.updateLotteryJackpot(new_jackpot);
 		}
 		//lottery id
-		String lottery_id = "bb469234a7698fc5baf8d983303472e78b9430880344effc9c57b9c4a4de71ae";
+		String lottery_id = "5dbe850c6211b2bd4d211c3990588683cf0ac0355561ea1e93a130521e05449b";
 		try {
 			//get next lottery object
 			gamble_list =  PojoBuilder.getLotteryObject(lottery_id);
